@@ -10,7 +10,7 @@ const orderTypes = [
 ]
 // 获取会员信息
 const memberStore = useMemberStore()
-console.log('memberStore :>> ', memberStore.profile?.avator)
+console.log('memberStore :>> ', memberStore.profile?.avatar)
 </script>
 
 <template>
@@ -20,7 +20,7 @@ console.log('memberStore :>> ', memberStore.profile?.avator)
       <!-- 情况1：已登录 -->
       <view class="flex h-120 px-36 text-white" v-if="memberStore.profile">
         <navigator url="/pagesMember/profile/profile" hover-class="none">
-          <image class="w-120 h-120 rounded-1" mode="aspectFill" :src="memberStore.profile?.avator"></image>
+          <image class="w-120 h-120 rounded-1" mode="aspectFill" :src="memberStore.profile?.avatar"></image>
         </navigator>
         <view class="flex flex-col justify-center leading-30 py-16 ml-20">
           <view class="max-w-350 mb-16 text-30rpx truncate">

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import AddressPanel from './components/AddressPanel.vue'
+import ServicePanel from './components/ServicePanel.vue'
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
 
@@ -29,6 +31,20 @@ const onTapImage = (url: string) => {
     current: url,
     urls: goods.value!.mainPictures
   })
+}
+
+// uni-ui 弹出层组件 ref
+const popup = ref<{
+  open: (type?: UniHelper.UniPopupType) => void
+  close: () => void
+}>()
+// 弹出层条件渲染
+const popupName = ref<'address' | 'service'>()
+const openPopup = (name: typeof popupName.value) => {
+  // 修改弹出层名称
+  popupName.value = name
+  // 打开弹出层
+  popup.value?.open()
 }
 </script>
 
@@ -66,16 +82,22 @@ const onTapImage = (url: string) => {
           <text class="label">选择</text>
           <text class="text ellipsis"> 请选择商品规格 </text>
         </view>
-        <view class="item arrow">
+        <view @tap="openPopup('address')" class="item arrow">
           <text class="label">送至</text>
           <text class="text ellipsis"> 请选择收获地址 </text>
         </view>
-        <view class="item arrow">
+        <view @tap="openPopup('service')" class="item arrow">
           <text class="label">服务</text>
           <text class="text ellipsis"> 无忧退 快速退款 免费包邮 </text>
         </view>
       </view>
     </view>
+
+    <!-- uni-ui 弹出层 -->
+    <uni-popup ref="popup" type="bottom" background-color="#fff">
+      <AddressPanel v-if="popupName === 'address'" @close="popup?.close()" />
+      <ServicePanel v-if="popupName === 'service'" @close="popup?.close()" />
+    </uni-popup>
 
     <!-- 商品详情 -->
     <view class="detail panel">

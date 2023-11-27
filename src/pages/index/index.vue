@@ -7,11 +7,11 @@
       refresher-enabled
       @refresherrefresh="onRefresherrefresh"
       :refresher-triggered="isTriggered"
+      scroll-y
       @scrolltolower="onScrolltolower"
       class="scroll-view"
-      scroll-y
     >
-      <PageSkeleton v-if="isLoading"></PageSkeleton>
+      <PageSkeleton v-if="isLoading" />
       <template v-else>
         <wSwiper :list="bannerList"></wSwiper>
         <!-- 商品分类 -->
@@ -29,7 +29,8 @@
 import CustomNavbar from './components/CustomNavbar'
 import CategoryPanel from './components/CategoryPanel'
 import HotPannel from './components/HotPannel'
-import type { GuessInstance } from '@/types/components'
+import type { GuessInstance } from '@/types/component'
+import Guess from '@/components/Guess/Guess'
 import PageSkeleton from './components/PageSkeleton.vue'
 // 获取轮播图
 const bannerList = ref<BannerItem[]>([])
@@ -52,15 +53,16 @@ const getHomeHotData = async () => {
   hotList.value = res.result
 }
 
-//是否加载中标记
+// 是否加载中标记
 const isLoading = ref(false)
-
 onLoad(async () => {
+  isLoading.value = true
   await Promise.all([getHomeBannerData(), getHomeCategoryData(), getHomeHotData()])
+  isLoading.value = false
 })
 
 // 获取猜你喜欢组件实例
-const guessRef = ref<wGuessInstance>()
+const guessRef = ref<GuessInstance>()
 // 滚动触底事件
 const onScrolltolower = () => {
   guessRef.value?.getMore()

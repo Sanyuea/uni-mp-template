@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { getMemberProfileAPI, putMemberProfileAPI } from '@/api/login'
 import { codeToText } from '@/utils/element-china-area-data.mjs'
+import { getMemberProfileAPI, putMemberProfileAPI } from '@/api/login'
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
-const memberStore = useMemberStore()
 // 完整地区
 const fullLocation = ref<string>('')
 // 获取个⼈信息
@@ -19,11 +18,16 @@ const getMemberProfileData = async () => {
     ' ' +
     codeToText[profile.value.countyCode?.replace(/0+$/, '')]
 }
-// 修改性别
+
+onLoad(() => {
+  getMemberProfileData()
+})
+
 const onGenderChange: UniHelper.RadioGroupOnChange = (ev) => {
-  profile.value.gender = parseInt(ev.detail.value) as Gender
+  profile.value.gender = parseInt(ev.detail.value) as Gender //这里有改，原本是parseInt(ev.detail.value)
 }
-//  修改生日
+
+// 修改⽣⽇
 const onBirthdayChange: UniHelper.DatePickerOnChange = (ev) => {
   profile.value.birthday = ev.detail.value
 }
@@ -35,27 +39,9 @@ const onFullLocationChange: UniHelper.RegionPickerOnChange = (ev) => {
   // 提交后端更新
   fullLocationCode = ev.detail.code!
 }
-// 点击保存提交表单
-const onSubmit = async () => {
-  const { nickname, gender, birthday, profession } = profile.value
-  const res = await putMemberProfileAPI({
-    nickname,
-    gender,
-    birthday,
-    profession,
-    provinceCode: fullLocationCode[0],
-    cityCode: fullLocationCode[1],
-    countyCode: fullLocationCode[2]
-  })
-  // 更新Store昵称
-  memberStore.profile!.nickname = res.result.nickname
-  uni.showToast({ icon: 'success', title: '保存成功' })
-  setTimeout(() => {
-    uni.navigateBack()
-  }, 400)
-}
 
-//修改头像
+const memberStore = useMemberStore()
+// 修改头像
 const onAvatarChange = () => {
   // 调⽤拍照/选择图⽚
   uni.chooseMedia({
@@ -89,25 +75,42 @@ const onAvatarChange = () => {
     }
   })
 }
-onLoad(() => {
-  getMemberProfileData()
-})
+
+// 点击保存提交表单
+const onSubmit = async () => {
+  const { nickname, gender, birthday, profession } = profile.value
+  const res = await putMemberProfileAPI({
+    nickname,
+    gender,
+    birthday,
+    profession,
+    provinceCode: fullLocationCode[0],
+    cityCode: fullLocationCode[1],
+    countyCode: fullLocationCode[2]
+  })
+  // 更新Store昵称
+  memberStore.profile!.nickname = res.result.nickname
+  uni.showToast({ icon: 'success', title: '保存成功' })
+  setTimeout(() => {
+    uni.navigateBack()
+  }, 400)
+}
 </script>
+
 <template>
   <view class="viewport">
     <!-- 导航栏 -->
     <view class="navbar" :style="{ paddingTop: safeAreaInsets?.top + 'px' }">
-      <navigator open-type="navigateBack" class="back icon-left" hover-class="none"></navigator>
+      <navigator open-type="navigateBack" class="back icon-left" hover-cla ss="none"></navigator>
       <view class="title">个⼈信息</view>
     </view>
     <!-- 头像 -->
     <view class="avatar">
       <view class="avatar-content">
-        <image @tap="onAvatarChange" class="image" :src="profile?.avatar" mode="aspectFill" />
+        <image @tap="onAvatarChange" class="image" :src="profile?.avatar" mo de="aspectFill" />
         <text class="text">点击修改头像</text>
       </view>
     </view>
-
     <!-- 表单 -->
     <view class="form">
       <!-- 表单内容 -->
@@ -152,14 +155,13 @@ onLoad(() => {
           <picker
             class="picker"
             mode="region"
-            :value="profile.fullLocation?.split(' ')"
+            :value="fullLocation?.split(' ')"
             @change="onFullLocationChange"
           >
             <view v-if="fullLocation">{{ fullLocation }}</view>
             <view class="placeholder" v-else>请选择城市</view>
           </picker>
         </view>
-
         <view class="form-item">
           <text class="label">职业</text>
           <input class="input" type="text" placeholder="请填写职业" v-model="profile.profession" />
@@ -175,6 +177,7 @@ onLoad(() => {
 page {
   background-color: #f4f4f4;
 }
+
 .viewport {
   display: flex;
   flex-direction: column;
@@ -183,31 +186,35 @@ page {
   background-size: auto 420rpx;
   background-repeat: no-repeat;
 }
+
 // 导航栏
 .navbar {
   position: relative;
-  .title {
-    height: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 16px;
-    font-weight: 500;
-    color: #fff;
-  }
-  .back {
-    position: absolute;
-    height: 40px;
-    width: 40px;
-    left: 0;
-    font-size: 20px;
-    color: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
 }
-//头像
+
+.title {
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.back {
+  position: absolute;
+  height: 40px;
+  width: 40px;
+  left: 0;
+  font-size: 20px;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+//头 像
 .avatar {
   text-align: center;
   width: 100%;
@@ -216,20 +223,23 @@ page {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  .image {
-    width: 160rpx;
-    height: 160rpx;
-    border-radius: 50%;
-    background-color: #eee;
-  }
-  .text {
-    display: block;
-    padding-top: 20rpx;
-    line-height: 1;
-    font-size: 26rpx;
-    color: #fff;
-  }
 }
+
+.image {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+  background-color: #eee;
+}
+
+.text {
+  display: block;
+  padding-top: 20rpx;
+  line-height: 1;
+  font-size: 26rpx;
+  color: #fff;
+}
+
 //表单
 .form {
   background-color: #f4f4f4;
@@ -249,8 +259,7 @@ page {
     background-color: #fff;
     font-size: 28rpx;
     border-bottom: 1rpx solid #ddd;
-
-    &:last-child {
+    & :last-child {
       border: none;
     }
     .label {
@@ -277,8 +286,6 @@ page {
   }
   &-button {
     height: 80rpx;
-    border-radius: 10%;
-    background-color: #28bb9c;
   }
 }
 </style>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// @ts-nocheck
 import { codeToText } from '@/utils/element-china-area-data.mjs'
 // 表单数据
 const form = ref({
@@ -16,15 +17,14 @@ const query = defineProps<{
   id?: string
 }>()
 
-//动态设置标题  js  1==true nul==false
-uni.setNavigationBarTitle({
-  title: query.id ? '修改地址' : '新建地址'
-})
+// 动态设置标题    js  1==true nul ==false
+uni.setNavigationBarTitle({ title: query.id ? '修改地址' : '新建地址' })
 
 // 收集所在地区
 const onRegionChange: UniHelper.RegionPickerOnChange = (ev) => {
   // 省市区(前端展示)
   form.value.fullLocation = ev.detail.value.join(' ')
+  console.log('ev.detail.value :>> ', ev.detail.value)
   // 省市区(后端参数)
   const [provinceCode, cityCode, countyCode] = ev.detail.code!
   // 合并数据
@@ -36,6 +36,7 @@ const onSwitchChange: UniHelper.SwitchOnChange = (ev) => {
   form.value.isDefault = ev.detail.value ? 1 : 0
 }
 
+// 定义校验规则
 const rules: UniHelper.UniFormsRules = {
   receiver: {
     rules: [{ required: true, errorMessage: '请输入收货人姓名' }]
@@ -80,6 +81,7 @@ const onSubmit = async () => {
     uni.showToast({ icon: 'error', title: '请填写完整信息' })
   }
 }
+
 // 获取收货地址详情数据
 const getMemberAddressByIdData = async () => {
   // 有 id 才调用接口
